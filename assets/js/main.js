@@ -1,0 +1,409 @@
+/* GF Maritime – site behaviour (no dependencies)
+   curtain loader · header · menu + search · reveals · hero parallax · service tabs · contact form */
+(function () {
+  "use strict";
+
+  var doc = document;
+  var html = doc.documentElement;
+  var $ = function (s, c) { return (c || doc).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); };
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function store(key, val) {
+    try {
+      if (val === undefined) return window.sessionStorage.getItem(key);
+      window.sessionStorage.setItem(key, val);
+    } catch (e) { /* storage can be unavailable (private mode) */ }
+    return null;
+  }
+
+  /* ------------------------------------------------------------------
+     Curtain loader + page transitions
+     ------------------------------------------------------------------ */
+  var curtain = $(".curtain");
+  var revealsStarted = false;
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function openCurtain() {
+    if (revealsStarted) return;
+    revealsStarted = true;
+    if (curtain) {
+      curtain.classList.add("is-open");
+      setTimeout(function () { curtain.classList.add("is-done"); }, 1300);
+    }
+    html.classList.add("is-ready");
+    setTimeout(startReveals, reduceMotion ? 0 : 350);
+  }
+
+  if (curtain && !reduceMotion) {
+    var seen = store("gf-intro");
+    if (seen) curtain.classList.add("is-quick");
+    store("gf-intro", "1");
+
+    var loaded = new Promise(function (resolve) {
+      if (doc.readyState === "complete") resolve();
+      else window.addEventListener("load", resolve, { once: true });
+    });
+    var fonts = doc.fonts && doc.fonts.ready ? doc.fonts.ready : Promise.resolve();
+    Promise.all([loaded, fonts, wait(seen ? 120 : 1500)]).then(openCurtain);
+    setTimeout(openCurtain, 6000); // never trap the visitor
+  } else {
+    openCurtain();
+  }
+
+  // Close the curtain, then navigate
+  function leave(url) {
+    if (!curtain || reduceMotion) { window.location.href = url; return; }
+    curtain.classList.remove("is-done", "is-open");
+    curtain.classList.add("is-quick", "is-leaving");
+    setTimeout(function () { window.location.href = url; }, 700);
+  }
+
+  doc.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+    var url;
+    try { url = new URL(a.href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin || (url.protocol !== "http:" && url.protocol !== "https:")) return;
+    var samePage = url.pathname === window.location.pathname && url.search === window.location.search;
+    if (samePage) return; // in-page anchor – let the browser (and tabs) handle it
+    e.preventDefault();
+    closeMenu(true);
+    leave(url.href);
+  });
+
+  // Back/forward cache: make sure the page is not left behind a closed curtain
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted && curtain) {
+      curtain.classList.remove("is-leaving");
+      curtain.classList.add("is-open", "is-done");
+    }
+  });
+
+  /* ------------------------------------------------------------------
+     Header
+     ------------------------------------------------------------------ */
+  var header = $(".site-header");
+  var hero = $(".hero");
+  var ticking = false;
+
+  function onScroll() {
+    ticking = false;
+    var y = window.scrollY || window.pageYOffset;
+    if (header) {
+      header.classList.toggle("is-scrolled", y > 8);
+      if (hero) {
+        var limit = hero.offsetHeight - header.offsetHeight - 24;
+        header.classList.toggle("is-solid", y > limit);
+      }
+    }
+    if (hero && !reduceMotion && y < hero.offsetHeight + 100) {
+      var media = $(".hero__media", hero);
+      if (media) media.style.translate = "0 " + Math.round(y * 0.22) + "px";
+    }
+  }
+  window.addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ------------------------------------------------------------------
+     Menu + search
+     ------------------------------------------------------------------ */
+  var menu = $(".menu");
+  var burger = $(".burger");
+  var closeBtn = $(".menu__close");
+  var searchInput = $("#site-search");
+  var resultsEl = $("#search-results");
+  var inertTargets = $$("main, .site-footer, .site-header, .wa");
+
+  function openMenu() {
+    if (!menu || menu.classList.contains("is-open")) return;
+    menu.classList.add("is-open");
+    burger.setAttribute("aria-expanded", "true");
+    doc.body.classList.add("is-locked");
+    inertTargets.forEach(function (el) { el.inert = true; });
+    setTimeout(function () { closeBtn && closeBtn.focus({ preventScroll: true }); }, 60);
+  }
+
+  function closeMenu(silent) {
+    if (!menu || !menu.classList.contains("is-open")) return;
+    menu.classList.remove("is-open");
+    burger.setAttribute("aria-expanded", "false");
+    doc.body.classList.remove("is-locked");
+    inertTargets.forEach(function (el) { el.inert = false; });
+    if (!silent) burger.focus({ preventScroll: true });
+  }
+
+  if (menu && burger) {
+    burger.addEventListener("click", openMenu);
+    closeBtn.addEventListener("click", function () { closeMenu(); });
+    doc.addEventListener("keydown", function (e) {
+      if (!menu.classList.contains("is-open")) return;
+      if (e.key === "Escape") { closeMenu(); return; }
+      if (e.key === "Tab") {
+        var f = $$("a[href], button, input", menu).filter(function (el) { return el.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    // same-page links inside the menu (e.g. #anchors) should also close it
+    $$("a", menu).forEach(function (a) {
+      a.addEventListener("click", function () { closeMenu(true); });
+    });
+  }
+
+  // Lightweight client-side search over the site's pages and sections
+  var INDEX = [
+    { t: "Home", u: "index.html", k: "welcome gf maritime ship agency panama canal trusted partner" },
+    { t: "Who We Are", u: "who-we-are.html", k: "about us company panama based ship agency network singapore middle east turkey spain netherlands belgium us gulf gsa focal" },
+    { t: "Vision & Mission", u: "who-we-are.html#vision", k: "vision mission trusted maritime partner of choice keeping vessels moving" },
+    { t: "Our Approach", u: "who-we-are.html#approach", k: "professional responsive connected solutions-focused single point of contact" },
+    { t: "Compliance and Safety", u: "who-we-are.html#standards", k: "compliance ethics health safety sustainability policy high standards" },
+    { t: "What We Do", u: "what-we-do.html", k: "services our services marine services" },
+    { t: "Canal Transits", u: "what-we-do.html#canal-transits", k: "panama canal transit booking scheduling documentation pilot tug toll pda tonnage certificate advisory draft" },
+    { t: "Husbandry Activities", u: "what-we-do.html#husbandry-activities", k: "husbandry crew logistics provisions stores" },
+    { t: "Port Agency", u: "what-we-do.html#port-agency", k: "port calls agency terminals berth clearance" },
+    { t: "Owners Protective Agency", u: "what-we-do.html#owners-protective-agency", k: "owners protective agency protect interests" },
+    { t: "Bunker Coordination", u: "what-we-do.html#bunker-coordination", k: "bunker fuel supplier coordination" },
+    { t: "Where We Are", u: "where-we-are.html", k: "location panama city office map" },
+    { t: "Ports & Terminals Across Panama", u: "where-we-are.html#coverage", k: "coverage atlantic caribbean pacific cristobal balboa manzanillo colon container terminal psa charco azul chiriqui grande anchorage limon bay gatun lake flamenco" },
+    { t: "Useful Links", u: "useful-links.html", k: "acp notices to shipping advisories tariff gatun lake water level amp autoridad maritima migracion" },
+    { t: "Talk To Us", u: "talk-to-us.html", k: "contact phone email address enquiry form renato bryant general manager office obarrio bella vista" },
+    { t: "Compliance, Ethics, Health & Safety and Sustainability Policies", u: "policies.html", k: "policy policies compliance ethics health safety sustainability" },
+    { t: "Terms, Privacy and Cookies", u: "legal.html", k: "terms conditions privacy cookies legal" }
+  ];
+
+  function norm(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+  var HERE = window.location.pathname.split("/").pop() || "index.html";
+
+  function renderResults(q) {
+    if (!resultsEl) return;
+    resultsEl.innerHTML = "";
+    var terms = norm(q).split(/\s+/).filter(Boolean);
+    if (!terms.length) return;
+    var hits = INDEX.map(function (it) {
+      var title = norm(it.t), hay = title + " " + norm(it.k);
+      var ok = terms.every(function (t) { return hay.indexOf(t) !== -1; });
+      var score = terms.reduce(function (s, t) { return s + (title.indexOf(t) !== -1 ? 2 : 1); }, 0);
+      return ok ? { it: it, score: score } : null;
+    }).filter(Boolean).sort(function (a, b) { return b.score - a.score; }).slice(0, 6);
+
+    if (!hits.length) {
+      var li = doc.createElement("li");
+      li.className = "search-empty";
+      li.textContent = "No results for “" + q + "”.";
+      resultsEl.appendChild(li);
+      return;
+    }
+    hits.forEach(function (h, i) {
+      var li = doc.createElement("li");
+      var a = doc.createElement("a");
+      a.href = h.it.u;
+      if (i === 0) a.dataset.active = "true";
+      a.textContent = h.it.t;
+      var small = doc.createElement("small");
+      small.textContent = h.it.u.split("#")[0].replace(".html", "").replace("index", "home").replace(/-/g, " ");
+      a.appendChild(small);
+      li.appendChild(a);
+      resultsEl.appendChild(li);
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () { renderResults(searchInput.value); });
+    searchInput.addEventListener("keydown", function (e) {
+      var items = $$("a", resultsEl);
+      if (!items.length) return;
+      var cur = items.findIndex(function (a) { return a.dataset.active === "true"; });
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var next = (cur + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+        items.forEach(function (a, i) { if (i === next) a.dataset.active = "true"; else delete a.dataset.active; });
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        var target = items[Math.max(cur, 0)];
+        var url = new URL(target.href, window.location.href);
+        closeMenu(true);
+        if (url.pathname === window.location.pathname) { window.location.href = target.href; }
+        else leave(target.href);
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     Scroll reveals
+     ------------------------------------------------------------------ */
+  function startReveals() {
+    $$("[data-stagger]").forEach(function (parent) {
+      Array.prototype.forEach.call(parent.children, function (child, i) {
+        if (!child.hasAttribute("data-reveal")) child.setAttribute("data-reveal", "up");
+        child.style.setProperty("--d", (i * 0.1).toFixed(2) + "s");
+      });
+    });
+    var els = $$("[data-reveal], [data-wipe]");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-in"); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ------------------------------------------------------------------
+     Service tabs (What We Do)
+     ------------------------------------------------------------------ */
+  var tablist = $(".tabs__list");
+  if (tablist) {
+    var tabs = $$('[role="tab"]', tablist);
+    var panels = tabs.map(function (t) { return doc.getElementById(t.getAttribute("aria-controls")); });
+    var bar = $(".tabs__bar", tablist);
+    var current = 0;
+
+    var moveBar = function () {
+      var t = tabs[current];
+      bar.style.setProperty("--x", t.offsetLeft + "px");
+      bar.style.setProperty("--w", t.offsetWidth + "px");
+    };
+
+    var select = function (i, opts) {
+      opts = opts || {};
+      current = i;
+      tabs.forEach(function (t, j) {
+        var on = j === i;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        panels[j].hidden = !on;
+        panels[j].classList.toggle("is-active", on);
+      });
+      moveBar();
+      var t = tabs[i];
+      if (tablist.scrollWidth > tablist.clientWidth) {
+        tablist.scrollTo({ left: t.offsetLeft - (tablist.clientWidth - t.offsetWidth) / 2, behavior: reduceMotion ? "auto" : "smooth" });
+      }
+      if (opts.focus) t.focus();
+      if (opts.push && window.history.replaceState) window.history.replaceState(null, "", "#" + t.dataset.slug);
+    };
+
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(i, { push: true }); });
+      t.addEventListener("keydown", function (e) {
+        var n = null;
+        if (e.key === "ArrowRight") n = (i + 1) % tabs.length;
+        else if (e.key === "ArrowLeft") n = (i - 1 + tabs.length) % tabs.length;
+        else if (e.key === "Home") n = 0;
+        else if (e.key === "End") n = tabs.length - 1;
+        if (n !== null) { e.preventDefault(); select(n, { focus: true, push: true }); }
+      });
+    });
+
+    var fromHash = function () {
+      var slug = window.location.hash.slice(1);
+      var i = tabs.findIndex(function (t) { return t.dataset.slug === slug; });
+      select(i === -1 ? 0 : i);
+    };
+    window.addEventListener("hashchange", function () {
+      fromHash();
+      var wrap = $(".tabs");
+      if (wrap) wrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    });
+    window.addEventListener("resize", moveBar);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(moveBar);
+    fromHash();
+  }
+
+  /* ------------------------------------------------------------------
+     Contact form
+     ------------------------------------------------------------------ */
+  var form = $("#contact-form-el");
+  if (form) {
+    var status = $(".form-status", form);
+    var MESSAGES = {
+      firstName: "Please enter your first name.",
+      lastName: "Please enter your last name.",
+      email: "Please enter a valid email address.",
+      imo: "An IMO number has 7 digits.",
+      message: "Please tell us how we can help.",
+      consent: "Please tick the consent box so we can reply to you."
+    };
+
+    var setError = function (input, msg) {
+      var field = input.closest(".field") || input.closest(".consent");
+      var err = field && $(".err", field);
+      if (field) field.classList.toggle("has-error", !!msg);
+      input.setAttribute("aria-invalid", msg ? "true" : "false");
+      if (err) err.textContent = msg || "";
+    };
+
+    $$("input, textarea", form).forEach(function (el) {
+      el.addEventListener("input", function () { if (el.validity.valid) setError(el, ""); });
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      status.className = "form-status";
+      status.textContent = "";
+
+      var firstBad = null;
+      $$("[required], [pattern]", form).forEach(function (el) {
+        if (!el.value && !el.required) { setError(el, ""); return; }
+        var ok = el.type === "checkbox" ? el.checked : el.checkValidity();
+        setError(el, ok ? "" : (MESSAGES[el.name] || "Please check this field."));
+        if (!ok && !firstBad) firstBad = el;
+      });
+      if (firstBad) { firstBad.focus(); return; }
+      if ($("#website", form).value) return; // honeypot
+
+      var data = {};
+      new FormData(form).forEach(function (v, k) { if (k !== "website") data[k] = v; });
+      var btn = $("button[type=submit]", form);
+      var endpoint = form.dataset.endpoint;
+
+      if (endpoint) {
+        btn.disabled = true;
+        status.textContent = "Sending…";
+        fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(data)
+        }).then(function (r) {
+          if (!r.ok) throw new Error(r.status);
+          form.reset();
+          status.textContent = "Thank you – your message has been sent. We will be in touch shortly.";
+        }).catch(function () {
+          status.className = "form-status is-error";
+          status.textContent = "Sorry, something went wrong. Please email operations@gf-maritime.com instead.";
+        }).then(function () { btn.disabled = false; });
+        return;
+      }
+
+      // No endpoint configured: hand the enquiry to the visitor's email app
+      var lines = [
+        "Company: " + data.company,
+        "Name: " + data.firstName + " " + data.lastName,
+        "Email: " + data.email,
+        "Contact number: " + (data.phone || "-"),
+        "Vessel name: " + (data.vessel || "-"),
+        "IMO number: " + (data.imo || "-"),
+        "Port/Canal requirement: " + (data.requirement || "-"),
+        "",
+        data.message
+      ];
+      var subject = "Website enquiry" + (data.vessel ? " – " + data.vessel : data.company ? " – " + data.company : "");
+      window.location.href = "mailto:operations@gf-maritime.com?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(lines.join("\n"));
+      status.textContent = "Your email app should now open with your message ready to send. If it doesn’t, please email operations@gf-maritime.com.";
+    });
+  }
+})();

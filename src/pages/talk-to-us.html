@@ -1,0 +1,77 @@
+<!--{"title":"Talk To Us | GF Maritime","desc":"Contact GF Maritime’s Panama team for your next Panama Canal transit or port call. Phone, email, office address and enquiry form.","header":"solid","nav":"talk-to-us.html"}-->
+  <main id="main" class="page-top">
+    <section class="intro-block contact-top" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="contact-top__head">
+          <div data-reveal="left">
+            <p class="eyebrow">Contact us</p>
+            <h1 class="h2" id="contact-title">Supporting Vessels Across Panama</h1>
+          </div>
+          <p data-reveal style="--d:.12s">From the Canal&rsquo;s Atlantic and Pacific approaches to Panama&rsquo;s principal ports, our team coordinates the local services and operational requirements needed to keep vessels moving efficiently.</p>
+        </div>
+
+        <div class="info-cards" id="offices" data-stagger>
+          <div class="info-card">
+            <h2>Contact details</h2>
+            <ul>
+              <li><img src="assets/icons/phone.svg" alt="" width="24" height="24"><a href="tel:+17138507728">+1 713 850 7728</a></li>
+              <li><img src="assets/icons/phone.svg" alt="" width="24" height="24"><a href="tel:+50767490031">+507 6749-0031</a></li>
+              <li><img src="assets/icons/envelope.svg" alt="" width="24" height="24"><span><a href="mailto:operations@gf-maritime.com">operations@gf-maritime.com</a> (24/7)</span></li>
+              <li><img src="assets/icons/envelope.svg" alt="" width="24" height="24"><a href="mailto:panama@gf-maritime.com">panama@gf-maritime.com</a></li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h2>Contact person</h2>
+            <ul>
+              <li class="no-icon"><span>Renato Bryant<br>General Manager</span></li>
+              <li><img src="assets/icons/envelope.svg" alt="" width="24" height="24"><a href="mailto:renato.bryant@gf-maritime.com">renato.bryant@gf-maritime.com</a></li>
+              <li><img src="assets/icons/phone.svg" alt="" width="24" height="24"><a href="tel:+50767490031">+507 6749-0031</a></li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h2>Office</h2>
+            <ul>
+              <li><img src="assets/icons/pin.svg" alt="" width="24" height="24"><address style="font-style:normal">Oficina No. 1307, Piso No. 13, Edificio PH Torre Office One, Urbanización Obarrio, Bella Vista, Panama</address></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--grad center" id="contact-form" aria-labelledby="form-title">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Have a question?</p>
+        <h2 class="h2 h2--light" id="form-title" data-reveal style="--d:.08s">Get In Touch With One Of Our Experts!</h2>
+
+        <div class="form-panel" data-reveal style="--d:.16s">
+          <!-- Add the URL of a form service (e.g. Formspree) to data-endpoint to post enquiries as JSON.
+               While it is empty, the form opens the visitor's email app with the enquiry pre-filled. -->
+          <form id="contact-form-el" action="#" method="post" novalidate data-endpoint="" style="text-align:left">
+            <div class="form-grid">
+              <label class="field field--full"><span class="sr-only">Company</span><input type="text" name="company" placeholder="Company" autocomplete="organization"></label>
+              <label class="field"><span class="sr-only">First name</span><input type="text" name="firstName" placeholder="First Name" autocomplete="given-name" required aria-describedby="err-first"><span class="err" id="err-first"></span></label>
+              <label class="field"><span class="sr-only">Last name</span><input type="text" name="lastName" placeholder="Last Name" autocomplete="family-name" required aria-describedby="err-last"><span class="err" id="err-last"></span></label>
+              <label class="field"><span class="sr-only">Email</span><input type="email" name="email" placeholder="Email" autocomplete="email" required aria-describedby="err-email"><span class="err" id="err-email"></span></label>
+              <label class="field"><span class="sr-only">Contact number</span><input type="tel" name="phone" placeholder="Contact Number" autocomplete="tel"></label>
+              <label class="field"><span class="sr-only">Vessel name</span><input type="text" name="vessel" placeholder="Vessel Name"></label>
+              <label class="field"><span class="sr-only">IMO number</span><input type="text" name="imo" placeholder="IMO Number" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" aria-describedby="err-imo"><span class="err" id="err-imo"></span></label>
+              <label class="field field--full"><span class="sr-only">Port or canal requirement</span><input type="text" name="requirement" placeholder="Port/Canal Requirement"></label>
+              <label class="field field--full"><span class="sr-only">Message</span><textarea name="message" placeholder="Message" required aria-describedby="err-message"></textarea><span class="err" id="err-message"></span></label>
+              <div class="hp" aria-hidden="true"><label>Website<input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
+            </div>
+
+            <label class="consent">
+              <input type="checkbox" name="consent" required>
+              <span>I give consent for GF Maritime to retain my information and send relevant marketing/information updates<span class="err"></span></span>
+            </label>
+
+            <div class="form-actions">
+              <button class="btn btn--white" type="submit">Submit</button>
+              <p class="form-status" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+{{> gateway}}  </main>
