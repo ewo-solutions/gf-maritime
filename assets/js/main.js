@@ -167,10 +167,10 @@
     { t: "Compliance and Safety", u: "who-we-are.html#standards", k: "compliance ethics health safety sustainability policy high standards" },
     { t: "What We Do", u: "what-we-do.html", k: "services our services marine services" },
     { t: "Canal Transits", u: "what-we-do.html#canal-transits", k: "panama canal transit booking scheduling documentation pilot tug toll pda tonnage certificate advisory draft" },
-    { t: "Husbandry Activities", u: "what-we-do.html#husbandry-activities", k: "husbandry crew logistics provisions stores" },
-    { t: "Port Agency", u: "what-we-do.html#port-agency", k: "port calls agency terminals berth clearance" },
-    { t: "Owners Protective Agency", u: "what-we-do.html#owners-protective-agency", k: "owners protective agency protect interests" },
-    { t: "Bunker Coordination", u: "what-we-do.html#bunker-coordination", k: "bunker fuel supplier coordination" },
+    { t: "Husbandry Activities", u: "what-we-do.html#husbandry-activities", k: "husbandry launch services fresh water provisions garbage sludge fumigation sanitation divers hull cleaning afloat repairs drydock astibal surveys flag inspections courier hospital clinic cash to master crew changes hotel transportation immigration visa medical spare parts ship supplies" },
+    { t: "Port Agency", u: "what-we-do.html#port-agency", k: "port calls agency terminals arrival departure formalities crew medical cash to master spare parts local service providers" },
+    { t: "Owners Protective Agency", u: "what-we-do.html#owners-protective-agency", k: "owners protective agency representation oversight supervision charterer liaison cost control reporting" },
+    { t: "Bunker Coordination", u: "what-we-do.html#bunker-coordination", k: "bunker fuel supplier coordination vessel scheduling delivery arrangements" },
     { t: "Where We Are", u: "where-we-are.html", k: "location panama city office map" },
     { t: "Ports & Terminals Across Panama", u: "where-we-are.html#coverage", k: "coverage atlantic caribbean pacific cristobal balboa manzanillo colon container terminal psa charco azul chiriqui grande anchorage limon bay gatun lake flamenco" },
     { t: "Useful Links", u: "useful-links.html", k: "acp notices to shipping advisories tariff gatun lake water level amp autoridad maritima migracion" },
@@ -262,6 +262,22 @@
   }
 
   /* ------------------------------------------------------------------
+     Service tiles (home): no hover on touch, so the first tap reveals the description
+     ------------------------------------------------------------------ */
+  var noHover = window.matchMedia("(hover: none)");
+  $$(".card").forEach(function (card) {
+    card.addEventListener("click", function (e) {
+      if (!noHover.matches || card.classList.contains("is-open")) return;
+      e.preventDefault();
+      $$(".card.is-open").forEach(function (c) { c.classList.remove("is-open"); });
+      card.classList.add("is-open");
+    });
+  });
+  doc.addEventListener("click", function (e) {
+    if (!e.target.closest(".card")) $$(".card.is-open").forEach(function (c) { c.classList.remove("is-open"); });
+  });
+
+  /* ------------------------------------------------------------------
      Service tabs (What We Do)
      ------------------------------------------------------------------ */
   var tablist = $(".tabs__list");
@@ -270,6 +286,24 @@
     var panels = tabs.map(function (t) { return doc.getElementById(t.getAttribute("aria-controls")); });
     var bar = $(".tabs__bar", tablist);
     var current = 0;
+
+    var scroller = $(".tabs__scroller");
+    var updateScrollState = function () {
+      var max = tablist.scrollWidth - tablist.clientWidth;
+      var hasPrev = tablist.scrollLeft > 4;
+      var hasNext = tablist.scrollLeft < max - 4;
+      scroller.classList.toggle("has-prev", hasPrev);
+      scroller.classList.toggle("has-next", hasNext);
+      tablist.style.setProperty("--fl", hasPrev ? "56px" : "0px");
+      tablist.style.setProperty("--fr", hasNext ? "56px" : "0px");
+    };
+    tablist.addEventListener("scroll", updateScrollState, { passive: true });
+    $(".tabs__arrow--prev", scroller).addEventListener("click", function () {
+      tablist.scrollBy({ left: -tablist.clientWidth * 0.6, behavior: "smooth" });
+    });
+    $(".tabs__arrow--next", scroller).addEventListener("click", function () {
+      tablist.scrollBy({ left: tablist.clientWidth * 0.6, behavior: "smooth" });
+    });
 
     var moveBar = function () {
       var t = tabs[current];
@@ -318,9 +352,22 @@
       var wrap = $(".tabs");
       if (wrap) wrap.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     });
-    window.addEventListener("resize", moveBar);
-    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(moveBar);
+    window.addEventListener("resize", function () { moveBar(); updateScrollState(); });
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { moveBar(); updateScrollState(); });
     fromHash();
+    updateScrollState();
+
+    // One gentle nudge the first time the tabs are seen, to show that they scroll sideways
+    if ("IntersectionObserver" in window && !reduceMotion) {
+      var nudged = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        nudged.disconnect();
+        if (tablist.scrollWidth - tablist.clientWidth < 24 || tablist.scrollLeft > 4) return;
+        tablist.scrollTo({ left: 80, behavior: "smooth" });
+        setTimeout(function () { tablist.scrollTo({ left: 0, behavior: "smooth" }); }, 900);
+      }, { threshold: 0.9 });
+      nudged.observe(scroller);
+    }
   }
 
   /* ------------------------------------------------------------------
