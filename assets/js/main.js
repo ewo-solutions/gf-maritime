@@ -67,6 +67,7 @@
     var url;
     try { url = new URL(a.href, window.location.href); } catch (err) { return; }
     if (url.origin !== window.location.origin || (url.protocol !== "http:" && url.protocol !== "https:")) return;
+    if (/\.pdf$/i.test(url.pathname)) return; // downloads are handled by the browser
     var samePage = url.pathname === window.location.pathname && url.search === window.location.search;
     if (samePage) return; // in-page anchor – let the browser (and tabs) handle it
     e.preventDefault();
@@ -176,9 +177,9 @@
     { t: "Useful Links", u: "useful-links.html", k: "acp notices to shipping advisories tariff gatun lake water level amp autoridad maritima migracion" },
     { t: "Talk To Us", u: "talk-to-us.html", k: "contact phone email address enquiry form renato bryant general manager office obarrio bella vista" },
     { t: "Compliance, Ethics, Health & Safety and Sustainability Policies", u: "policies.html", k: "policy policies compliance ethics health safety sustainability" },
-    { t: "Website Terms and Conditions", u: "terms-and-conditions.html", k: "terms conditions legal user responsibilities liability intellectual property governing law" },
-  { t: "Privacy Policy", u: "privacy-policy.html", k: "privacy personal data collection retention security consent rights gdpr legal" },
-  { t: "Cookie Policy", u: "cookie-policy.html", k: "cookies tracking analytics google analytics browser settings legal" }
+  { t: "Terms and Conditions (PDF)", u: "assets/docs/GF-Maritime-Website-Terms-and-Conditions.pdf", k: "terms conditions legal user responsibilities liability intellectual property governing law" },
+  { t: "Privacy Policy (PDF)", u: "assets/docs/GF-Maritime-Website-Privacy-Policy.pdf", k: "privacy personal data collection retention security consent rights gdpr legal" },
+  { t: "Cookie Policy (PDF)", u: "assets/docs/GF-Maritime-Website-Cookie-Policy.pdf", k: "cookies tracking analytics google analytics browser settings legal" }
   ];
 
   function norm(s) {
@@ -209,10 +210,11 @@
       var li = doc.createElement("li");
       var a = doc.createElement("a");
       a.href = h.it.u;
+      if (/\.pdf$/i.test(h.it.u)) { a.target = "_blank"; a.rel = "noopener"; }
       if (i === 0) a.dataset.active = "true";
       a.textContent = h.it.t;
       var small = doc.createElement("small");
-      small.textContent = h.it.u.split("#")[0].replace(".html", "").replace("index", "home").replace(/-/g, " ");
+      small.textContent = /\.pdf$/i.test(h.it.u) ? "PDF document" : h.it.u.split("#")[0].replace(".html", "").replace("index", "home").replace(/-/g, " ");
       a.appendChild(small);
       li.appendChild(a);
       resultsEl.appendChild(li);
@@ -234,6 +236,7 @@
         var target = items[Math.max(cur, 0)];
         var url = new URL(target.href, window.location.href);
         closeMenu(true);
+        if (/\.pdf$/i.test(url.pathname)) { window.open(target.href, "_blank", "noopener"); return; }
         if (url.pathname === window.location.pathname) { window.location.href = target.href; }
         else leave(target.href);
       }

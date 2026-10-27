@@ -6,7 +6,9 @@ Plain HTML, CSS and JavaScript – host the repository root on any static host (
 ## Pages
 
 `index.html` · `who-we-are.html` · `what-we-do.html` · `where-we-are.html` · `useful-links.html` · `talk-to-us.html`
-plus `policies.html`, `terms-and-conditions.html`, `privacy-policy.html` and `cookie-policy.html` (linked from the footer / policy cards).
+plus `policies.html` (linked from the footer / policy cards).
+
+The Terms and Conditions, Privacy Policy and Cookie Policy are downloadable PDFs in `assets/docs/`, linked from the footer. To update one, replace the PDF with the same filename.
 
 ## Editing
 
