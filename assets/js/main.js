@@ -165,7 +165,7 @@
     { t: "Vision & Mission", u: "who-we-are.html#vision", k: "vision mission trusted maritime partner of choice keeping vessels moving" },
     { t: "Our Approach", u: "who-we-are.html#approach", k: "professional responsive connected solutions-focused single point of contact" },
     { t: "Compliance and Safety", u: "who-we-are.html#standards", k: "compliance ethics health safety sustainability policy high standards" },
-    { t: "What We Do", u: "what-we-do.html", k: "services our services marine services" },
+    { t: "What We Do", u: "what-we-do.html", k: "services our services maritime services marine" },
     { t: "Canal Transits", u: "what-we-do.html#canal-transits", k: "panama canal transit booking scheduling documentation pilot tug toll pda tonnage certificate advisory draft" },
     { t: "Husbandry Activities", u: "what-we-do.html#husbandry-activities", k: "husbandry launch services fresh water provisions garbage sludge fumigation sanitation divers hull cleaning afloat repairs drydock astibal surveys flag inspections courier hospital clinic cash to master crew changes hotel transportation immigration visa medical spare parts ship supplies" },
     { t: "Port Agency", u: "what-we-do.html#port-agency", k: "port calls agency terminals arrival departure formalities crew medical cash to master spare parts local service providers" },
