@@ -133,6 +133,9 @@ button { font: inherit; color: inherit; }
   width: fit-content;
   max-width: 100%;
   text-wrap: balance;
+  /* background-clip:text only paints inside the box – give descenders (g, y, p) room */
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
 }
 .center .h2 { margin-inline: auto; }
 .h2--light {
@@ -1250,6 +1253,21 @@ main { display: block; }
 .doc section + section { margin-top: clamp(36px, 4vw, 64px); }
 .doc h2 { font-weight: 500; font-size: var(--fs-h2); line-height: 1.15; color: var(--c-deep); }
 .doc p { margin-top: 0.8em; }
+.doc a { color: var(--c-mid); text-decoration: underline; text-underline-offset: 3px; }
+.doc a:hover { color: var(--c-deep); }
+.doc-meta { margin-top: 0.4em; font-weight: 400; font-size: 0.875rem; letter-spacing: 0.04em; color: #5b6b72; }
+
+/* long-form legal text */
+.doc--legal { max-width: 940px; font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem); }
+.doc--legal .eyebrow + .h2 { margin-top: 0.3em; }
+.doc--legal > p { margin-top: 1.4em; }
+.doc--legal section { margin-top: clamp(28px, 3vw, 44px); }
+.doc--legal h2 { font-size: clamp(1.375rem, 1.1rem + 0.8vw, 1.875rem); }
+.doc--legal h3 { margin-top: 1.4em; font-weight: 500; font-size: 1.0625em; color: var(--c-mid); }
+.doc--legal h2 + p, .doc--legal h3 + p { margin-top: 0.6em; }
+.doc--legal ul { list-style: disc; padding-left: 1.4em; margin-top: 0.6em; font-weight: 300; }
+.doc--legal li + li { margin-top: 0.4em; }
+.doc--legal strong { font-weight: 500; }
 
 /* ==========================================================================
    Responsive

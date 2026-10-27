@@ -176,7 +176,9 @@
     { t: "Useful Links", u: "useful-links.html", k: "acp notices to shipping advisories tariff gatun lake water level amp autoridad maritima migracion" },
     { t: "Talk To Us", u: "talk-to-us.html", k: "contact phone email address enquiry form renato bryant general manager office obarrio bella vista" },
     { t: "Compliance, Ethics, Health & Safety and Sustainability Policies", u: "policies.html", k: "policy policies compliance ethics health safety sustainability" },
-    { t: "Terms, Privacy and Cookies", u: "legal.html", k: "terms conditions privacy cookies legal" }
+    { t: "Website Terms and Conditions", u: "terms-and-conditions.html", k: "terms conditions legal user responsibilities liability intellectual property governing law" },
+  { t: "Privacy Policy", u: "privacy-policy.html", k: "privacy personal data collection retention security consent rights gdpr legal" },
+  { t: "Cookie Policy", u: "cookie-policy.html", k: "cookies tracking analytics google analytics browser settings legal" }
   ];
 
   function norm(s) {

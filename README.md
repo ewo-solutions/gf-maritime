@@ -6,7 +6,7 @@ Plain HTML, CSS and JavaScript – host the repository root on any static host (
 ## Pages
 
 `index.html` · `who-we-are.html` · `what-we-do.html` · `where-we-are.html` · `useful-links.html` · `talk-to-us.html`
-plus `policies.html` and `legal.html` (linked from the footer / policy cards).
+plus `policies.html`, `terms-and-conditions.html`, `privacy-policy.html` and `cookie-policy.html` (linked from the footer / policy cards).
 
 ## Editing
 
