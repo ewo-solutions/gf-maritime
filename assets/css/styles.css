@@ -1247,6 +1247,7 @@ main { display: block; }
 .form-actions .btn { min-width: 229px; height: 58px; padding: 0 2em; font-size: 0.9375rem; }
 .form-status { min-height: 1.5em; text-align: center; font-weight: 500; font-size: 1rem; }
 .form-status.is-error { color: #ffd1d1; }
+.form-status a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- Simple text pages ---------- */
 

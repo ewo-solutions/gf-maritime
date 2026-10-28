@@ -44,9 +44,9 @@
         <h2 class="h2 h2--light" id="form-title" data-reveal style="--d:.08s">Get In Touch With One Of Our Experts!</h2>
 
         <div class="form-panel" data-reveal style="--d:.16s">
-          <!-- Add the URL of a form service (e.g. Formspree) to data-endpoint to post enquiries as JSON.
-               While it is empty, the form opens the visitor's email app with the enquiry pre-filled. -->
-          <form id="contact-form-el" action="#" method="post" novalidate data-endpoint="" style="text-align:left">
+          <!-- Enquiries are posted to the /api/contact serverless function (api/contact.js), which emails them
+               via Resend. If sending fails, visitors get a link to send the same message from their email app. -->
+          <form id="contact-form-el" action="#" method="post" novalidate data-endpoint="/api/contact" style="text-align:left">
             <div class="form-grid">
               <label class="field field--full"><span class="sr-only">Company</span><input type="text" name="company" placeholder="Company" autocomplete="organization"></label>
               <label class="field"><span class="sr-only">First name</span><input type="text" name="firstName" placeholder="First Name" autocomplete="given-name" required aria-describedby="err-first"><span class="err" id="err-first"></span></label>
@@ -58,6 +58,7 @@
               <label class="field field--full"><span class="sr-only">Port or canal requirement</span><input type="text" name="requirement" placeholder="Port/Canal Requirement"></label>
               <label class="field field--full"><span class="sr-only">Message</span><textarea name="message" placeholder="Message" required aria-describedby="err-message"></textarea><span class="err" id="err-message"></span></label>
               <div class="hp" aria-hidden="true"><label>Website<input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
+              <input type="hidden" name="ts" id="form-ts" value="">
             </div>
 
             <label class="consent">

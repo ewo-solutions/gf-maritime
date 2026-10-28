@@ -402,6 +402,45 @@
       el.addEventListener("input", function () { if (el.validity.valid) setError(el, ""); });
     });
 
+    var CONTACT_EMAIL = "operations@gf-maritime.com";
+
+    // Spam trap: the server rejects submissions that arrive faster than a person could fill the form
+    var stamp = function () { var t = $("#form-ts", form); if (t) t.value = String(Date.now()); };
+    stamp();
+
+    var mailtoHref = function (data) {
+      var lines = [
+        "Company: " + (data.company || "-"),
+        "Name: " + data.firstName + " " + data.lastName,
+        "Email: " + data.email,
+        "Contact number: " + (data.phone || "-"),
+        "Vessel name: " + (data.vessel || "-"),
+        "IMO number: " + (data.imo || "-"),
+        "Port/Canal requirement: " + (data.requirement || "-"),
+        "",
+        data.message
+      ];
+      var subject = "Website enquiry" + (data.vessel ? " – " + data.vessel : data.company ? " – " + data.company : "");
+      return "mailto:" + CONTACT_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(lines.join("\n"));
+    };
+
+    // Sending failed: never lose the enquiry – offer the same message as a ready-to-send email
+    var showFallback = function (data) {
+      var a = doc.createElement("a");
+      a.href = mailtoHref(data);
+      a.textContent = "Send it by email instead";
+      status.className = "form-status is-error";
+      status.textContent = "Sorry, we couldn’t send your message just now. ";
+      status.appendChild(a);
+    };
+
+    // Hand the enquiry to the visitor's email app (used when no email service is configured)
+    var openEmailApp = function (data) {
+      window.location.href = mailtoHref(data);
+      status.className = "form-status";
+      status.textContent = "Your email app should now open with your message ready to send. If it doesn’t, please email " + CONTACT_EMAIL + ".";
+    };
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       status.className = "form-status";
@@ -418,7 +457,7 @@
       if ($("#website", form).value) return; // honeypot
 
       var data = {};
-      new FormData(form).forEach(function (v, k) { if (k !== "website") data[k] = v; });
+      new FormData(form).forEach(function (v, k) { data[k] = v; });
       var btn = $("button[type=submit]", form);
       var endpoint = form.dataset.endpoint;
 
@@ -430,32 +469,19 @@
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify(data)
         }).then(function (r) {
-          if (!r.ok) throw new Error(r.status);
+          // 503 = the email service is not configured yet: behave like the plain email-app form
+          if (r.status === 503) { openEmailApp(data); return; }
+          if (!r.ok) throw new Error(String(r.status));
           form.reset();
+          stamp();
           status.textContent = "Thank you – your message has been sent. We will be in touch shortly.";
         }).catch(function () {
-          status.className = "form-status is-error";
-          status.textContent = "Sorry, something went wrong. Please email operations@gf-maritime.com instead.";
+          showFallback(data);
         }).then(function () { btn.disabled = false; });
         return;
       }
 
-      // No endpoint configured: hand the enquiry to the visitor's email app
-      var lines = [
-        "Company: " + data.company,
-        "Name: " + data.firstName + " " + data.lastName,
-        "Email: " + data.email,
-        "Contact number: " + (data.phone || "-"),
-        "Vessel name: " + (data.vessel || "-"),
-        "IMO number: " + (data.imo || "-"),
-        "Port/Canal requirement: " + (data.requirement || "-"),
-        "",
-        data.message
-      ];
-      var subject = "Website enquiry" + (data.vessel ? " – " + data.vessel : data.company ? " – " + data.company : "");
-      window.location.href = "mailto:operations@gf-maritime.com?subject=" + encodeURIComponent(subject) +
-        "&body=" + encodeURIComponent(lines.join("\n"));
-      status.textContent = "Your email app should now open with your message ready to send. If it doesn’t, please email operations@gf-maritime.com.";
+      openEmailApp(data);
     });
   }
 })();

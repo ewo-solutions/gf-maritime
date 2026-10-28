@@ -31,5 +31,16 @@ Styles live in `assets/css/styles.css`, behaviour in `assets/js/main.js`.
 
 ## Contact form
 
-With no backend configured the form opens the visitor's email app with the enquiry pre-filled (to `operations@gf-maritime.com`).
-To post enquiries to a form service instead, set `data-endpoint="https://…"` on `#contact-form-el` in `src/pages/talk-to-us.html` (it receives JSON).
+The form on `talk-to-us.html` posts to `/api/contact` (`api/contact.js`, a Vercel serverless function) which emails the enquiry to
+`operations@gf-maritime.com` through [Resend](https://resend.com), with the visitor's address as Reply-To.
+If sending ever fails, the visitor is offered the same message as a ready-to-send email, so nothing is lost.
+
+Set these in Vercel → Project Settings → Environment Variables (then redeploy):
+
+| Variable | Required | Notes |
+|---|---|---|
+| `RESEND_API_KEY` | yes | Resend API key. Until it is set the form falls back to the visitor's email app. |
+| `CONTACT_TO` | no | Recipient, default `operations@gf-maritime.com`. |
+| `CONTACT_FROM` | no | Sender, default `GF Maritime Website <website@gf-maritime.com>` – the domain must be verified in Resend. |
+
+Spam protection: hidden honeypot field, minimum fill time, origin check and input limits.
