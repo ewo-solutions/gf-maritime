@@ -43,4 +43,15 @@ Set these in Vercel → Project Settings → Environment Variables (then redeplo
 | `CONTACT_TO` | no | Recipient, default `operations@gf-maritime.com`. |
 | `CONTACT_FROM` | no | Sender, default `GF Maritime Website <website@gf-maritime.com>` – the domain must be verified in Resend. |
 
-Spam protection: hidden honeypot field, minimum fill time, origin check and input limits.
+## Bot and spam protection
+
+Contact form (in `api/contact.js`): hidden honeypot field, minimum fill time, origin check, input limits, messages stuffed with
+links are dropped, identical messages are only sent once, and a best-effort limit of 5 submissions per visitor per 10 minutes.
+Spam that is caught by the traps gets a normal "success" response so bots learn nothing.
+
+Because serverless instances do not share memory, the in-code limit is only a backstop. The main defence is the **Vercel Firewall**
+(Project → Firewall), configured in the dashboard:
+
+1. **Bot Protection** → set to *Challenge* (blocks automated, non-browser traffic; real browsers and verified crawlers such as Google pass).
+2. **Custom rule "Rate limit contact form"** → if *Request Path* equals `/api/contact` and *Method* equals `POST`, then *Rate Limit*
+   (Fixed window, 10 minutes, 5 requests, key: IP) with action *Deny*.
